@@ -245,7 +245,7 @@ void ControlBar::doTransportInventoryUI( Object *transport, const CommandSet *co
 		data.currIndex = firstInventoryIndex;
 		data.maxIndex = lastInventoryIndex;
 		data.transport = transport;
-		data.enableButton = !this->isObserverControlBarOn();
+		data.enableButton = isControlEnabled();
 		contain->iterateContained( populateInvDataCallback, &data, FALSE );
 
 	}
@@ -334,7 +334,7 @@ void ControlBar::populateCommand( Object *obj )
 				m_commandWindows[ i ]->winHide( FALSE );
 
 				// enable by default
-				m_commandWindows[ i ]->winEnable( !isObserverControlBarOn() );
+				m_commandWindows[ i ]->winEnable( isControlEnabled() );
 
 				// populate the visible button with data from the command button
 				setControlCommand( m_commandWindows[ i ], commandButton );
@@ -624,7 +624,7 @@ void ControlBar::populateBuildQueue( Object *producer )
 			m_queueData[ windowIndex ].productionID = production->getProductionID();
 
 			// set the images
-			m_queueData[ windowIndex ].control->winEnable( !isObserverControlBarOn() );
+			m_queueData[ windowIndex ].control->winEnable( isControlEnabled() );
 			m_queueData[ windowIndex ].control->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
 			image = production->getProductionObject()->getButtonImage();
 			GadgetButtonSetEnabledImage( m_queueData[ windowIndex ].control, image );
@@ -657,7 +657,7 @@ void ControlBar::populateBuildQueue( Object *producer )
 			m_queueData[ windowIndex ].upgradeToResearch = production->getProductionUpgrade();
 
 			// set the images
-			m_queueData[ windowIndex ].control->winEnable( !isObserverControlBarOn() );
+			m_queueData[ windowIndex ].control->winEnable( isControlEnabled() );
 			m_queueData[ windowIndex ].control->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
 			image = ut->getButtonImage();
 			GadgetButtonSetEnabledImage( m_queueData[ windowIndex ].control, image );
@@ -879,7 +879,7 @@ void ControlBar::updateContextCommand()
 				win->winSetStatus( WIN_STATUS_ALWAYS_COLOR );
 				break;
 			default:
-				win->winEnable( !isObserverControlBarOn() );
+				win->winEnable( isControlEnabled() );
 				break;
 		}
 
