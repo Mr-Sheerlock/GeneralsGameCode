@@ -1480,15 +1480,14 @@ void ControlBar::update()
 
 		showRallyPoint(exitPosition);
 
-		ContainModuleInterface* observerContain = obj ? obj->getContain() : nullptr;
-		Bool showObserverInventory = observerContain != nullptr
+		const ContainModuleInterface* observerContain = obj ? obj->getContain() : nullptr;
+		const Bool showObserverInventory = observerContain != nullptr
 			&& observerContain->getContainMax() > 0
 			&& m_observerLookAtPlayer == nullptr
 			&& isControllingPlayerNeutral(obj);
 
 		if (showObserverInventory)
 		{
-			
 			if (observerContain->isGarrisonable() && obj->getCommandSetString().isEmpty())
 			{
 				if (m_currContext != CB_CONTEXT_STRUCTURE_INVENTORY || m_currentSelectedDrawable != drawToEvaluateFor)
@@ -1496,7 +1495,8 @@ void ControlBar::update()
 				else
 					updateContextStructureInventory();
 			}
-			else {
+			else
+			{
 				if (m_currContext != CB_CONTEXT_COMMAND || m_currentSelectedDrawable != drawToEvaluateFor)
 					switchToContext(CB_CONTEXT_COMMAND, drawToEvaluateFor);
 				else
@@ -1834,12 +1834,11 @@ void ControlBar::evaluateContextUI()
 		ContainModuleInterface *contain = obj->getContain();
 		if( contain && contain->getContainMax() > 0 )
 		{
-			Bool apparentControllingPlayerNeutral = isApparentControllingPlayerNeutral(obj);
 			//Note: All following checks already account for the fact that this object
 			//isn't ours.
 
 			//The only case we can actually see a non-controlled controlbar is a neutral garrisonable structure.
-			if( !contain->isGarrisonable() || !apparentControllingPlayerNeutral)
+			if( !contain->isGarrisonable() || !isApparentControllingPlayerNeutral(obj))
 			{
 				//Can't peek inside enemy/allied containers period!
 				return;
@@ -1930,8 +1929,7 @@ void ControlBar::evaluateContextUI()
 				//handle it!
 
 				// we cannot select objects that are controlled by our enemies
-				bool isRelationshipNeutral = isControllingPlayerNeutral(obj);
-				if( obj->isLocallyControlled() == TRUE || isRelationshipNeutral )
+				if( obj->isLocallyControlled() == TRUE || isControllingPlayerNeutral(obj))
 					switchToContext( CB_CONTEXT_STRUCTURE_INVENTORY, drawToEvaluateFor );
 
 			}
@@ -3600,26 +3598,26 @@ Bool ControlBar::canShowSpecialPowerShortcut() const
 Bool ControlBar::isApparentControllingPlayerNeutral(const Object* obj) const
 {
 	ContainModuleInterface* contain = obj->getContain();
-	const Player* otherPlayer = contain->getApparentControllingPlayer(ThePlayerList->getLocalPlayer());
-	if (!otherPlayer)
-		otherPlayer = obj->getControllingPlayer();
-	const Player* player = ThePlayerList->getLocalPlayer();
-
-	if (!player || !otherPlayer)
-	{
-		//Sanity.
+	if(!contain)
 		return FALSE;
-	}
 
-	Relationship relation = player->getRelationship(otherPlayer->getDefaultTeam());
-	return relation == NEUTRAL;
+	Player* localPlayer = ThePlayerList->getLocalPlayer();
+	const Player* otherPlayer = contain->getApparentControllingPlayer(localPlayer);
+
+	if (!otherPlayer)
+	{
+		otherPlayer = obj->getControllingPlayer();
+		//Sanity.
+		if (!otherPlayer)
+			return FALSE;
+	}
+	return localPlayer->getRelationship(otherPlayer->getDefaultTeam()) == NEUTRAL;
 }
 
 Bool ControlBar::isControllingPlayerNeutral(const Object* obj) const
 {
 	const Player* player = ThePlayerList->getLocalPlayer();
-	Relationship relation = player->getRelationship(obj->getTeam());
-	return relation == NEUTRAL;
+	return player->getRelationship(obj->getTeam()) == NEUTRAL;
 }
 
 //-------------------------------------------------------------------------------------------------

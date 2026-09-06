@@ -65,9 +65,9 @@ void ControlBar::populateButtonProc( Object *obj, void *userData )
 	PopulateButtonInfo* info = (PopulateButtonInfo*)userData;
 
 	
-	if (info->buttonIndex>= MAX_STRUCTURE_INVENTORY_BUTTONS) {
+	if (info->buttonIndex>= MAX_STRUCTURE_INVENTORY_BUTTONS) 
 		return;
-	}
+	
 	// put object in inventory data
 	info->self->m_containData[ info->buttonIndex ].control = info->inventoryButtons[ info->buttonIndex ];
 	info->self->m_containData[ info->buttonIndex ].objectID = obj->getID();

@@ -77,7 +77,7 @@ struct PopulateInvButtonData
 	Int maxIndex;					   ///< this is the last valid control we can use
 	GameWindow **controls;   ///< the controls
 	Object *transport;			 ///< the transport
-	ControlBar* self;
+	Bool enableButton;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ void ControlBar::populateInvDataCallback( Object *obj, void *userData )
 	GadgetButtonDrawOverlayImage( control, image );
 
 	// enable the control
-	control->winEnable(!data->self->isObserverControlBarOn());
+	control->winEnable(data->enableButton);
 
 }
 
@@ -245,7 +245,7 @@ void ControlBar::doTransportInventoryUI( Object *transport, const CommandSet *co
 		data.currIndex = firstInventoryIndex;
 		data.maxIndex = lastInventoryIndex;
 		data.transport = transport;
-		data.self = this;
+		data.enableButton = !this->isObserverControlBarOn();
 		contain->iterateContained( populateInvDataCallback, &data, FALSE );
 
 	}
