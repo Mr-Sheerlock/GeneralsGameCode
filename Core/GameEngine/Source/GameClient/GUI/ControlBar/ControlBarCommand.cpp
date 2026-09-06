@@ -701,6 +701,17 @@ void ControlBar::updateContextCommand()
 	if( m_currentSelectedDrawable )
 		obj = m_currentSelectedDrawable->getObject();
 
+	Player *localPlayer = ThePlayerList->getLocalPlayer();
+	if (obj->isLocallyControlled() == FALSE &&
+			localPlayer->getRelationship(obj->getTeam()) != NEUTRAL)
+	{
+		Drawable *draw = obj->getDrawable();
+
+		if (draw)
+			TheInGameUI->deselectDrawable(draw);
+		return;
+	}
+
 	//
 	// the contents of objects are usually showed on the UI, when those contents change
 	// we always to update the UI

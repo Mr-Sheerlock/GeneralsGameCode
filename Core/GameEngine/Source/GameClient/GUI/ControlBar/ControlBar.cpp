@@ -1480,35 +1480,14 @@ void ControlBar::update()
 
 		showRallyPoint(exitPosition);
 
-		const ContainModuleInterface* observerContain = obj ? obj->getContain() : nullptr;
-		const Bool showObserverInventory = observerContain != nullptr
-			&& observerContain->getContainMax() > 0
-			&& m_observerLookAtPlayer == nullptr
-			&& isControllingPlayerNeutral(obj);
+		if(getObservedPlayer() != nullptr )
+		{
+			if( m_currContext != CB_CONTEXT_OBSERVER_LIST )
+				switchToContext( CB_CONTEXT_OBSERVER_LIST, nullptr );
 
-		if (showObserverInventory)
-		{
-			if (observerContain->isGarrisonable() && obj->getCommandSetString().isEmpty())
-			{
-				if (m_currContext != CB_CONTEXT_STRUCTURE_INVENTORY || m_currentSelectedDrawable != drawToEvaluateFor)
-					switchToContext(CB_CONTEXT_STRUCTURE_INVENTORY, drawToEvaluateFor);
-				else
-					updateContextStructureInventory();
-			}
-			else
-			{
-				if (m_currContext != CB_CONTEXT_COMMAND || m_currentSelectedDrawable != drawToEvaluateFor)
-					switchToContext(CB_CONTEXT_COMMAND, drawToEvaluateFor);
-				else
-					updateContextCommand();
-			}
-		}
-		else if (m_currContext != CB_CONTEXT_OBSERVER_LIST)
-		{
-			switchToContext(CB_CONTEXT_OBSERVER_LIST, nullptr);
+			return;
 		}
 
-		return;
 	}
 
 
@@ -1789,20 +1768,26 @@ void ControlBar::evaluateContextUI()
 
 	// sanity, nothing selected
 	if( TheInGameUI->getSelectCount() == 0 )
+	{
+		switchToDefaultContext(nullptr);
 		return;
+	}
 
 	// get the list of drawable IDs from the in game UI
 	const DrawableList *selectedDrawables = TheInGameUI->getAllSelectedDrawables();
 
 	// sanity
 	if( selectedDrawables->empty() == TRUE )
+	{
+		switchToDefaultContext(nullptr);
 		return;
+	}
 
 	//Make sure the selected objects are in fact, controllable! If not, then
 	//we don't show any GUI commands for them!!!
 	//This is used when we select enemy objects or objects on another team.
 	//@todo we may want to show their portrait
-	if( !TheInGameUI->areSelectedObjectsControllable() )
+	if( !isObserverControlBarOn() && !TheInGameUI->areSelectedObjectsControllable())
 	{
 		//Also make sure the unit isn't a garrisonable neutral civ team building!
 		Drawable *draw = selectedDrawables->front();
@@ -1827,7 +1812,7 @@ void ControlBar::evaluateContextUI()
 		}
 		else
 		{
-			switchToContext( CB_CONTEXT_NONE, draw );
+			switchToDefaultContext(draw);
 		}
 
 		//Check for a contain interface and a enemy relationship and reject that!
@@ -1868,7 +1853,7 @@ void ControlBar::evaluateContextUI()
 		// but is represented in the UI as a single unit,
 		// so we must isolate and evaluate only the Nexus
 		drawToEvaluateFor = TheGameClient->findDrawableByID( TheInGameUI->getSoloNexusSelectedDrawableID() ) ;
-		multiSelect = ( drawToEvaluateFor == nullptr );
+		multiSelect = ( drawToEvaluateFor == nullptr ) && !isObserverControlBarOn();
 
 	}
 	else // get the first and only drawble in the selection list
@@ -1939,8 +1924,8 @@ void ControlBar::evaluateContextUI()
 			}
 			else if( obj->getCommandSetString().isEmpty() == FALSE )
 			{
-
-				switchToContext( CB_CONTEXT_COMMAND, drawToEvaluateFor );
+				if (obj->isLocallyControlled() == TRUE || isControllingPlayerNeutral(obj))
+					switchToContext( CB_CONTEXT_COMMAND, drawToEvaluateFor );
 
 			}
 			else if (obj->getControllingPlayer()->getPlayerTemplate()->getBeaconTemplate().compare(obj->getTemplate()->getName()) == 0)
@@ -1948,7 +1933,7 @@ void ControlBar::evaluateContextUI()
 				switchToContext( CB_CONTEXT_BEACON, drawToEvaluateFor );
 			}
 			else
-				switchToContext( CB_CONTEXT_NONE, drawToEvaluateFor );
+				switchToDefaultContext(drawToEvaluateFor);
 		}
 
 	}
@@ -2163,6 +2148,14 @@ CBCommandStatus ControlBar::processContextSensitiveButtonTransition( GameWindow 
 	* art and/or buttons that we need to for the new context using data from the object
 	* passed in */
 //-------------------------------------------------------------------------------------------------
+void ControlBar::switchToDefaultContext(Drawable* draw)
+{
+	if (isObserverControlBarOn() && getObservedPlayer() == nullptr)
+		switchToContext(CB_CONTEXT_OBSERVER_LIST, nullptr);
+	else
+		switchToContext(CB_CONTEXT_NONE, draw);
+}
+
 void ControlBar::switchToContext( ControlBarContext context, Drawable *draw )
 {
 

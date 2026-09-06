@@ -816,7 +816,7 @@ protected:
 
 	/// switch the interface context to the new mode and populate as needed
 	void switchToContext( ControlBarContext context, Drawable *draw );
-
+	void switchToDefaultContext(Drawable* draw);
 	/// set the command data into the button
 	void setControlCommand( const AsciiString& buttonWindowName, GameWindow *parent,
 											 const CommandButton *commandButton );
